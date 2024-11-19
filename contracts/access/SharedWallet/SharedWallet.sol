@@ -59,7 +59,8 @@ contract SharedWallet is Ownable, AccessControl {
         return hasRole(SPENDER, _account);
     }
 
-    function withdraw(address _to, uint256 amount) public {
+    function withdraw(uint256 amount) public {
+        address _to = _msgSender();
         _checkRole(SPENDER, _to);
         if (amount > withdrawLimit) {
             revert SharedWallet__ExceededLimit({
