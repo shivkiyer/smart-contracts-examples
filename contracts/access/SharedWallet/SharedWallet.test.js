@@ -168,4 +168,39 @@ describe('SharedWallet.sol', () => {
     }
     expect(result).toBe(null);
   });
+
+  it('should enable the contract owner to remove withdrawers', async () => {
+    await testContract.setWithdrawers([testUser1.address, testUser2.address]);
+
+    let checkWithdrawer = await testContract.isWithdrawer(testUser1.address);
+    expect(checkWithdrawer).toBe(true);
+
+    const result = await testContract.removeWithDrawers([testUser1.address]);
+
+    checkWithdrawer = await testContract.isWithdrawer(testUser1.address);
+    expect(checkWithdrawer).toBe(false);
+
+    checkWithdrawer = await testContract.isWithdrawer(testUser2.address);
+    expect(checkWithdrawer).toBe(true);
+  });
+
+  it('should allow only the contract owner to remove withdrawers', async () => {
+    await testContract.setWithdrawers([testUser1.address, testUser2.address]);
+
+    let checkWithdrawer = await testContract.isWithdrawer(testUser1.address);
+    expect(checkWithdrawer).toBe(true);
+
+    let result;
+
+    try {
+      await testContract
+        .connect(testUser3)
+        .removeWithDrawers([testUser1.address]);
+      result = null;
+    } catch (e) {
+      result = e;
+    }
+
+    expect(result).not.toBe(null);
+  });
 });
