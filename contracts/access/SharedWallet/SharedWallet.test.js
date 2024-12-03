@@ -1,7 +1,7 @@
 const { ethers } = require('hardhat');
 
 describe('SharedWallet.sol', () => {
-  let owner, testUser1, testUser2;
+  let owner, testUser1, testUser2, testUser3;
   let testContract;
 
   beforeEach(async () => {
