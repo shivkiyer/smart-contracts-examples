@@ -121,13 +121,14 @@ contract TokenExchange is ERC20 {
      */
     function buy(address _seller, uint256 _value) public payable {
         uint256 _amount = msg.value;
+        uint256 _saleAmount = _tokenSale[_seller].price * _value;
         address _buyer = _msgSender();
 
         if (_value > _tokenSale[_seller].value) {
             revert TokenExchange__InsufficientTokensForSale(_seller, _value);
         }
 
-        if (_amount < _tokenSale[_seller].price * _value) {
+        if (_amount < _saleAmount) {
             revert TokenExchange__InsufficientPayment(
                 _buyer,
                 _value,
@@ -137,6 +138,9 @@ contract TokenExchange is ERC20 {
 
         _tokenSale[_seller].value -= _value;
         _transfer(_seller, _buyer, _value);
-        payable(_seller).transfer(_amount);
+        payable(_seller).transfer(_saleAmount);
+        if (_amount > _saleAmount) {
+            payable(_buyer).transfer(_amount - _saleAmount);
+        }
     }
 }
