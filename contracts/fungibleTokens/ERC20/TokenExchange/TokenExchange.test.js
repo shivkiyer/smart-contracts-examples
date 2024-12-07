@@ -144,4 +144,94 @@ describe('TokenExchange', () => {
     }
     expect(result).not.toBe(null);
   });
+
+  it('should refund excess Ether sent by buyer after processing amount for tokens', async () => {
+    await testContract.transfer(seller1, 20000);
+
+    const initalBuyerAccountBalance = await ethers.provider.getBalance(buyer1);
+    const valueInWei = ethers.parseEther('0.05');
+    await testContract.connect(seller1).sell(5000, valueInWei);
+
+    const buyValueInWei = ethers.parseEther('8');
+    await testContract
+      .connect(buyer1)
+      .buy(seller1.address, 100, { value: buyValueInWei });
+
+    const finalBuyerAccountBalance = await ethers.provider.getBalance(buyer1);
+
+    expect(
+      Number(
+        ethers.formatUnits(
+          (initalBuyerAccountBalance - finalBuyerAccountBalance).toString(),
+          'ether'
+        )
+      )
+    ).toBeGreaterThan(4.95);
+    expect(
+      Number(
+        ethers.formatUnits(
+          (initalBuyerAccountBalance - finalBuyerAccountBalance).toString(),
+          'ether'
+        )
+      )
+    ).toBeLessThan(5.05);
+  });
+
+  it('should allow a seller to reduce the number of tokens for sale', async () => {
+    await testContract.transfer(seller1, 20000);
+
+    const valueInWei = ethers.parseEther('0.05');
+    await testContract.connect(seller1).sell(5000, valueInWei);
+
+    let checkValueForSale = await testContract
+      .connect(buyer1)
+      .querySellerValue(seller1.address);
+    expect(checkValueForSale.toString()).toBe('5000');
+
+    await testContract.connect(seller1).retractSale(2000);
+
+    checkValueForSale = await testContract
+      .connect(buyer1)
+      .querySellerValue(seller1.address);
+    expect(checkValueForSale.toString()).toBe('3000');
+  });
+
+  it('should allow a seller to add more tokens for sale', async () => {
+    await testContract.transfer(seller1, 20000);
+
+    const valueInWei = ethers.parseEther('0.05');
+    await testContract.connect(seller1).sell(5000, valueInWei);
+
+    let checkValueForSale = await testContract
+      .connect(buyer1)
+      .querySellerValue(seller1.address);
+    expect(checkValueForSale.toString()).toBe('5000');
+
+    await testContract.connect(seller1).sell(2000, valueInWei);
+
+    checkValueForSale = await testContract
+      .connect(buyer1)
+      .querySellerValue(seller1.address);
+    expect(checkValueForSale.toString()).toBe('7000');
+  });
+
+  it('should allow a seller to update the price of tokens for sale', async () => {
+    await testContract.transfer(seller1, 20000);
+
+    const valueInWei = ethers.parseEther('0.05');
+    await testContract.connect(seller1).sell(5000, valueInWei);
+
+    let checkPriceForSale = await testContract
+      .connect(buyer1)
+      .querySellerPrice(seller1.address);
+    expect(ethers.formatUnits(checkPriceForSale, 'ether')).toBe('0.05');
+
+    const updatedValueInWei = ethers.parseEther('0.03');
+    await testContract.connect(seller1).sell(0, updatedValueInWei);
+
+    checkPriceForSale = await testContract
+      .connect(buyer1)
+      .querySellerPrice(seller1.address);
+    expect(ethers.formatUnits(checkPriceForSale, 'ether')).toBe('0.03');
+  });
 });
