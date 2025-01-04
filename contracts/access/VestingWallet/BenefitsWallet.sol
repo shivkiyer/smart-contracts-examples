@@ -2,7 +2,7 @@
 
 pragma solidity ^0.8.20;
 
-import {Address} from "@openzeppelin/utils/Address.sol";
+import {Address} from "@openzeppelin/contracts/utils/Address.sol";
 import {VestingWallet} from "@openzeppelin/contracts/finance/VestingWallet.sol";
 
 /**
@@ -49,6 +49,10 @@ contract BenefitsWallet is VestingWallet {
             return super._vestingSchedule(totalAllocation, timestamp);
         }
         return 0;
+    }
+
+    function controller() public view returns (address) {
+        return _controller;
     }
 
     function intervalCounter() public view returns (uint64) {
