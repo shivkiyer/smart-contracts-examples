@@ -63,7 +63,7 @@ contract BenefitsWallet is VestingWallet {
         return _intervalSeconds;
     }
 
-    function release() public virtual override onlyController {
+    function release() public virtual override onlyOwner {
         _intervalCounter += 1;
         super.release();
     }
