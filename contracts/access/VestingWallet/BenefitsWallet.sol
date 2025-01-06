@@ -45,7 +45,7 @@ contract BenefitsWallet is VestingWallet {
         uint256 totalAllocation,
         uint64 timestamp
     ) internal view virtual override returns (uint256) {
-        if (timestamp > (_intervalCounter * _intervalSeconds)) {
+        if (timestamp > (start() + _intervalCounter * _intervalSeconds)) {
             return super._vestingSchedule(totalAllocation, timestamp);
         }
         return 0;
